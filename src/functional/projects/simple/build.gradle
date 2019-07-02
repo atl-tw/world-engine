@@ -1,0 +1,9 @@
+plugins {
+    id 'net.kebernet.world-engine'
+}
+
+
+task plan(type:WorldEngineTask){
+    component = "application1"
+    action = "plan"
+}
