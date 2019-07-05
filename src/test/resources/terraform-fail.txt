@@ -1,0 +1,12 @@
+Error: Error applying plan:
+
+1 error(s) occurred:
+
+* azurerm_kubernetes_cluster.k8s: 1 error(s) occurred:
+
+* azurerm_kubernetes_cluster.k8s: containerservice.ManagedClustersClient#CreateOrUpdate: Failure sending request: StatusCode=400 -- Original Error: Code="" Message=""
+
+Terraform does not automatically rollback in the face of errors.
+Instead, your Terraform state file has been partially updated with
+any resources that successfully completed. Please address the error
+above and apply again to incrementally change your infrastructure.

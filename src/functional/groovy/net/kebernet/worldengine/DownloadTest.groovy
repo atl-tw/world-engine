@@ -26,10 +26,26 @@ class DownloadTest extends Specification {
 
     def "downloads stock file"() {
         when:
+        new File("build/functional/projects/download/.gradle/terraform").deleteDir()
         def result = GradleRunner.create()
                 .withProjectDir(new File("build/functional/projects/download"))
                 .withArguments('download')
                 .withPluginClasspath()
+                .withDebug(true)
+                .forwardStdOutput(new OutputStreamWriter(System.out))
+                .build()
+        then:
+        result.task(":download").outcome == SUCCESS
+
+    }
+
+    def "downloads doesn't download when present"() {
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(new File("build/functional/projects/download"))
+                .withArguments('download')
+                .withPluginClasspath()
+                .withDebug(true)
                 .forwardStdOutput(new OutputStreamWriter(System.out))
                 .build()
         then:

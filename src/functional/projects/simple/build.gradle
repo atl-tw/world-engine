@@ -6,4 +6,5 @@ plugins {
 task plan(type:WorldEngineTask){
     component = "application1"
     action = "plan"
+    logTerraformOutput = true
 }

@@ -1,13 +1,20 @@
-
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.owasp:dependency-check-gradle:5.1.0'
+    }
+}
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.31'
     id 'com.gradle.plugin-publish' version '0.10.1'
     id 'java-gradle-plugin'
     id 'groovy'
+    id 'jacoco'
 }
 
-
-
+apply plugin: 'org.owasp.dependencycheck'
 
 repositories {
     mavenCentral()
@@ -24,8 +31,16 @@ dependencies {
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude group: 'org.codehaus.groovy'
     }
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.28.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
 }
 
 
@@ -48,9 +63,32 @@ task functionalTest(type: Test) {
     testLogging {
         showStandardStreams = true
     }
+    jacoco {
+        enabled = true
+        append = true
+        destinationFile = file("${buildDir}/jacoco/test.exec")
+    }
+}
+
+
+jacoco {
+    toolVersion = "0.8.2"
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        csv.enabled false
+    }
 }
 
 check.dependsOn functionalTest
+check.dependsOn dependencyCheckAnalyze
+check.finalizedBy jacocoTestReport
+
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"

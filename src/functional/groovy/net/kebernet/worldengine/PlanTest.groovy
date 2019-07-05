@@ -33,6 +33,7 @@ class PlanTest extends Specification {
                 .withArguments('plan',
                 "-Pwe.terraformExecutable=${new File("src/functional/bin/fake-terraform").getAbsolutePath()}")
                 .withPluginClasspath()
+                .withDebug(true)
                 .forwardStdOutput(new OutputStreamWriter(System.out))
                 .build()
         then:
@@ -49,6 +50,7 @@ class PlanTest extends Specification {
                 .withArguments('plan', "-Pwe.version=1",
                 "-Pwe.terraformExecutable=${new File("src/functional/bin/fake-terraform").getAbsolutePath()}")
                 .withPluginClasspath()
+                .withDebug(true)
                 .forwardStdOutput(new OutputStreamWriter(System.out))
                 .build()
         then:
@@ -66,6 +68,7 @@ class PlanTest extends Specification {
                 .withArguments('foo', "-Pwe.version=1",
                 "-Pwe.terraformExecutable=${new File("src/functional/bin/fake-terraform").getAbsolutePath()}")
                 .withPluginClasspath()
+                .withDebug(true)
                 .forwardStdOutput(new OutputStreamWriter(System.out))
                 .build()
 

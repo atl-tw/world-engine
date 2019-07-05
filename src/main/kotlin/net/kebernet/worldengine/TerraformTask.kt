@@ -5,11 +5,10 @@ import org.gradle.api.tasks.*
 import org.gradle.api.tasks.Optional
 import java.io.File
 import java.util.*
-import java.util.Optional.ofNullable
 
 
 @Suppress("MemberVisibilityCanBePrivate")
-abstract class TerraformTask : DefaultTask() {
+open class TerraformTask : DefaultTask() {
 
     companion object Constants {
         const val ENVIRONMENTS_DIR = "environments"
@@ -35,6 +34,14 @@ abstract class TerraformTask : DefaultTask() {
 
     @Input
     var action = "init"
+
+    @Input
+    @Optional
+    var failOnTerraformErrors = true
+
+    @Input
+    @Optional
+    var logTerraformOutput = false
 
     @Internal
     var files: List<File>? = null
@@ -79,7 +86,7 @@ abstract class TerraformTask : DefaultTask() {
 
     fun prepareCommand(action:String): List<String>{
         val command = ArrayList<String>()
-        val exec = File(this.terraformExecutable)
+        val exec = File(this.terraformExecutable ?: "terraform")
         println("EXECUTABLE ${exec.absolutePath}")
         command.add(if(exec.exists()) exec.absolutePath else  "terraform")
         command.add(action)
@@ -104,26 +111,13 @@ abstract class TerraformTask : DefaultTask() {
     }
 
     private fun scanDirectory(componentDir: File) :List<File> {
-        if (!componentDir.exists() || !componentDir.isDirectory) {
-            throw RuntimeException("${componentDir.absolutePath} isn't a directory")
-        }
-        return findConfiguration(componentDir, version)
+        return findConfiguration(componentDir, this.environment, version)
     }
 
-    private fun findConfiguration(sourceDir: File, suffix: String): List<File> {
-        val result: ArrayList<File> = ArrayList()
-        var files = File(sourceDir, ENVIRONMENTS_DIR)
-                .listFiles { _, name -> name == "$environment.tfvars" }
-        ofNullable(files).ifPresent { result.addAll(files) }
-        files = File(sourceDir, ENVIRONMENTS_DIR)
-                .listFiles { _, name -> name == "$environment-$suffix.tfvars" }
-        ofNullable(files).ifPresent { result.addAll(files) }
-        return result
-    }
 
+    @Suppress("unused")
     @TaskAction
     fun apply(){
-        println("PATH ${System.getenv().get("PATH")}")
         init()
         val log = logFile.bufferedWriter(Charsets.UTF_8)
         log.use {
@@ -133,12 +127,16 @@ abstract class TerraformTask : DefaultTask() {
             var result = this.executeHook("before")
             if(result != Integer.MAX_VALUE) log.write("Executed ${this.name}-before with return code $result\n")
             log.write("Command:\n\t${command.joinToString(" ")}\n")
-            result = this.executeHook("after")
-            if(result != Integer.MAX_VALUE) log.write("Executed ${this.name}-after with return code $result\n")
             val componentDir = File(terraformSourceDir, "components/$component")
-            runner.executeCommand(command, componentDir, File(logDir, "component-${action}.log"))
-            this.executeHook("after")
+            val terraformLog = File(logDir, "component-$action.log")
+            result = runner.executeCommand(command, componentDir, terraformLog)
+            if (result != 0) throw RuntimeException("Terraform failed with code $result")
+            doLogFile(terraformLog, logger, logTerraformOutput, failOnTerraformErrors, action)
+            result = this.executeHook("after")
+            if (result != Integer.MAX_VALUE) log.write("Executed ${this.name}-after with return code $result\n")
+
         }
     }
+
 
 }
