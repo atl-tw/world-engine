@@ -38,6 +38,21 @@ Project Structure
                         * main.tf
                         * environments <- component specific variable files
                         * hooks <- executable files that are run around the TF tasks
+                        
+Terraform Install
+-----------------
+
+You can use the plugin to install terraform into the ```.gradle/terraform``` directory
+using an "InstallTerraform" task
+
+```groovy
+task download(type:InstallTerraform){
+    terraformVersion = "0.12.2" // <- optional, defaults to 0.12.3
+    terraformDownloadUrl = "https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.2_solaris_amd64.zip"  
+    // ^- this is important. It will only detect 64 bit versions for windows/mac/linux. If you are 
+    // not using one of these, you need to specify the full download URL zip path 
+}
+```
 
 Environments
 ------------
@@ -67,6 +82,7 @@ Hooks are an easy way to invoke shell scripts around your terraform operations. 
 task foo(type:WorldEngineTask){
     component = "application1"
     action = "plan"
+    dependsOn download // <-- if you have a terraform install task
 }
 ```
 

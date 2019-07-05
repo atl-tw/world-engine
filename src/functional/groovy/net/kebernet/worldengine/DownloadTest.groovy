@@ -53,5 +53,37 @@ class DownloadTest extends Specification {
 
     }
 
+    def "downloads old file"() {
+        when:
+        new File("build/functional/projects/download-old-version/.gradle/terraform").deleteDir()
+        def result = GradleRunner.create()
+                .withProjectDir(new File("build/functional/projects/download-old-version"))
+                .withArguments('download')
+                .withPluginClasspath()
+                .withDebug(true)
+                .forwardStdOutput(new OutputStreamWriter(System.out))
+                .build()
+        then:
+        result.task(":download").outcome == SUCCESS
+        new File("build/functional/projects/download-old-version/.gradle/terraform", "terraform").exists()
 
+    }
+
+
+
+    def "downloads bsd file"() {
+        when:
+        new File("build/functional/projects/download-bsd-version/.gradle/terraform").deleteDir()
+        def result = GradleRunner.create()
+                .withProjectDir(new File("build/functional/projects/download-bsd-version"))
+                .withArguments('download')
+                .withPluginClasspath()
+                .withDebug(true)
+                .forwardStdOutput(new OutputStreamWriter(System.out))
+                .build()
+        then:
+        result.task(":download").outcome == SUCCESS
+        new File("build/functional/projects/download-bsd-version/.gradle/terraform", "terraform").exists()
+
+    }
 }

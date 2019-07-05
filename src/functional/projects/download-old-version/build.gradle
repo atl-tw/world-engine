@@ -1,0 +1,8 @@
+plugins {
+    id 'net.kebernet.world-engine'
+}
+
+
+task download(type:InstallTerraform){
+    terraformVersion = "0.12.2"
+}

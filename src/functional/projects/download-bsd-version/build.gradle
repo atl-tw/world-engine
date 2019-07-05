@@ -1,0 +1,8 @@
+plugins {
+    id 'net.kebernet.world-engine'
+}
+
+
+task download(type:InstallTerraform){
+    terraformDownloadUrl = "https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.3_freebsd_arm.zip"
+}
