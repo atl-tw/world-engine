@@ -18,7 +18,8 @@ abstract class TerraformTask : DefaultTask() {
     }
 
     @InputFile @Optional
-    var terraformExecutable: File? = null
+    var terraformExecutable: String? = project.findProperty("we.terraformExecutable") as String? ?:
+            File(project.rootProject.projectDir, ".gradle/terraform/terraform").absolutePath
 
     @InputDirectory
     var terraformSourceDir: File = File(project.projectDir, "src/deploy/terraform")
@@ -68,13 +69,19 @@ abstract class TerraformTask : DefaultTask() {
         this.tfLog = File(this.logDir, "${this.name.toLowerCase(Locale.getDefault())}.log")
         this.workingDirectory = File(terraformSourceDir, "components/$component")
         this.runner = HookRunner()
+        this.runner.environmentState["TFVAR_environment"] = this.environment
+        this.runner.environmentState["TFVAR_version"] = this.version
+        this.runner.environmentState["TFVAR_envversion"] = "${this.environment}-${this.version}"
         logFile.mkdirs()
         logFile.delete()
+
     }
 
     fun prepareCommand(action:String): List<String>{
         val command = ArrayList<String>()
-        command.add(this.terraformExecutable?.absolutePath ?: "terraform")
+        val exec = File(this.terraformExecutable)
+        println("EXECUTABLE ${exec.absolutePath}")
+        command.add(if(exec.exists()) exec.absolutePath else  "terraform")
         command.add(action)
         command.addAll(DEFAULT_TF_ARGS)
         command.addAll(this.files!!.map { f->  "-var-file=${f.absolutePath}" })
@@ -89,7 +96,7 @@ abstract class TerraformTask : DefaultTask() {
         }
         val scriptFile = hooksDirectory.listFiles { _, name ->
             name.startsWith("${this.name}-$suffix.")
-        }.firstOrNull()
+        }?.first()
         if(scriptFile != null) {
             return this.runner.execute(scriptFile, workingDirectory, File(this.logDir, "$component-${scriptFile.name}.log"))
         }
@@ -116,6 +123,7 @@ abstract class TerraformTask : DefaultTask() {
 
     @TaskAction
     fun apply(){
+        println("PATH ${System.getenv().get("PATH")}")
         init()
         val log = logFile.bufferedWriter(Charsets.UTF_8)
         log.use {

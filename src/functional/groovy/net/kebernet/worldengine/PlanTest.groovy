@@ -24,14 +24,14 @@ class PlanTest extends Specification {
         Files.createDirectories(to)
         Files.walkFileTree(from, new CopyDir(from, to))
 
-
     }
 
     def "can find dev files "() {
         when:
         def result = GradleRunner.create()
                 .withProjectDir(new File("build/functional/projects/simple"))
-                .withArguments('plan')
+                .withArguments('plan',
+                "-Pwe.terraformExecutable=${new File("src/functional/bin/fake-terraform").getAbsolutePath()}")
                 .withPluginClasspath()
                 .forwardStdOutput(new OutputStreamWriter(System.out))
                 .build()
@@ -46,7 +46,8 @@ class PlanTest extends Specification {
         when:
         def result = GradleRunner.create()
                 .withProjectDir(new File("build/functional/projects/simple"))
-                .withArguments('plan', "-Pwe.version=1")
+                .withArguments('plan', "-Pwe.version=1",
+                "-Pwe.terraformExecutable=${new File("src/functional/bin/fake-terraform").getAbsolutePath()}")
                 .withPluginClasspath()
                 .forwardStdOutput(new OutputStreamWriter(System.out))
                 .build()
@@ -62,10 +63,12 @@ class PlanTest extends Specification {
         when:
         def result = GradleRunner.create()
                 .withProjectDir(new File("build/functional/projects/hooks"))
-                .withArguments('foo', "-Pwe.version=1")
+                .withArguments('foo', "-Pwe.version=1",
+                "-Pwe.terraformExecutable=${new File("src/functional/bin/fake-terraform").getAbsolutePath()}")
                 .withPluginClasspath()
                 .forwardStdOutput(new OutputStreamWriter(System.out))
                 .build()
+
         then:
         result.task(":foo").outcome == SUCCESS
         def file = new File("build/functional/projects/hooks/build/world-engine/foo.log").getText("UTF-8")
@@ -75,5 +78,6 @@ class PlanTest extends Specification {
         before == "BEFORE!\n"
         def after = new File("build/functional/projects/hooks/src/deploy/terraform/components/application1/after.txt").getText("UTF-8")
         after == 'AFTER! Hello!\n'
+
     }
 }

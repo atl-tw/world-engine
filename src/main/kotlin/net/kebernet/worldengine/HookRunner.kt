@@ -3,7 +3,8 @@ package net.kebernet.worldengine
 import java.io.File
 
 class HookRunner  {
-    private val environmentState = HashMap<String, String>()
+
+    val environmentState = HashMap<String, String>()
 
     init {
         this.environmentState.putAll(System.getenv())
@@ -31,6 +32,7 @@ class HookRunner  {
 
     fun execute(scriptFile: File, workingDirectory: File?, log: File): Int {
         val tempFile = File.createTempFile("env", "txt")
+        tempFile.deleteOnExit()
         val command = listOf(
                 "bash", "-c", "source ${scriptFile.absolutePath}; env > ${tempFile.absolutePath}"
         )
