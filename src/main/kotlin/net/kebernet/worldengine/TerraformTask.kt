@@ -18,7 +18,6 @@ package net.kebernet.worldengine
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
@@ -34,10 +33,12 @@ open class TerraformTask : DefaultTask() {
         val DEFAULT_TF_ARGS = listOf("-no-color", "-input=false", "-backend=true", "-reconfigure", "-upgrade")
     }
 
-    @InputFile
+    @Input
     @Optional
     var terraformExecutable: String? = project.findProperty("we.terraformExecutable") as String?
-            ?: File(project.rootProject.projectDir, ".gradle/terraform/terraform").absolutePath
+            ?: if (File(project.rootProject.projectDir, ".gradle/terraform/terraform").exists())
+                File(project.rootProject.projectDir, ".gradle/terraform/terraform").absolutePath
+            else null
 
     @InputDirectory
     var terraformSourceDir: File = File(project.projectDir, "src/deploy/terraform")
