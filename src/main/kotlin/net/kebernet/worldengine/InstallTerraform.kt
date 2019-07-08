@@ -47,7 +47,7 @@ open class InstallTerraform: DefaultTask() {
                 ?: throw RuntimeException("Unknown download URL. Please set the 'terraformDownloadUrl' property")
         logger.lifecycle("Downloading Terrafrom from $url")
 
-        val tmpFile = File.createTempFile("terraform", "zip")
+        val tmpFile = File.createTempFile("terraform0-", ".zip")
         tmpFile.deleteOnExit()
         URL(url).openStream().use { i ->
             FileOutputStream(tmpFile).use { o ->

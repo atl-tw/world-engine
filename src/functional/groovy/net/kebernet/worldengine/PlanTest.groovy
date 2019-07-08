@@ -66,7 +66,8 @@ class PlanTest extends Specification {
         def result = GradleRunner.create()
                 .withProjectDir(new File("build/functional/projects/hooks"))
                 .withArguments('foo', "-Pwe.version=1",
-                "-Pwe.terraformExecutable=${new File("src/functional/bin/fake-terraform").getAbsolutePath()}")
+                "-Pwe.terraformExecutable=${new File("src/functional/bin/fake-terraform").getAbsolutePath()}",
+                "--stacktrace")
                 .withPluginClasspath()
                 .withDebug(true)
                 .forwardStdOutput(new OutputStreamWriter(System.out))

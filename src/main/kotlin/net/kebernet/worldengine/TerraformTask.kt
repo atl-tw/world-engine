@@ -103,9 +103,24 @@ open class TerraformTask : DefaultTask() {
         }
         val scriptFile = hooksDirectory.listFiles { _, name ->
             name.startsWith("${this.name}-$suffix.")
-        }?.first()
+        }?.firstOrNull()
         if(scriptFile != null) {
             return this.runner.execute(scriptFile, workingDirectory, File(this.logDir, "$component-${scriptFile.name}.log"))
+        }
+        return Integer.MAX_VALUE
+    }
+
+
+    fun executeGlobalHook(hookName: String): Int {
+        val hooksDirectory = File(terraformSourceDir, "hooks")
+        if(!hooksDirectory.exists() || !hooksDirectory.isDirectory){
+            return Integer.MAX_VALUE
+        }
+        val scriptFile = hooksDirectory.listFiles { _, name ->
+            name.startsWith(hookName)
+        }?.firstOrNull()
+        if(scriptFile != null) {
+            return this.runner.execute(scriptFile, workingDirectory, File(this.logDir, "$${scriptFile.name}.log"))
         }
         return Integer.MAX_VALUE
     }
@@ -123,18 +138,28 @@ open class TerraformTask : DefaultTask() {
         log.use {
             log.write("Using variable files:\n ${files?.joinToString("") { f-> "\t${f.absolutePath}\n" }}\n")
             val command = prepareCommand(action)
+
             log.write("Working Directory: ${workingDirectory.absolutePath}\n")
-            var result = this.executeHook("before")
+
+            var result = this.executeGlobalHook("before")
+            if(result != Integer.MAX_VALUE) log.write("Executed global before with return code $result\n")
+
+            result = this.executeHook("before")
             if(result != Integer.MAX_VALUE) log.write("Executed ${this.name}-before with return code $result\n")
             log.write("Command:\n\t${command.joinToString(" ")}\n")
+
             val componentDir = File(terraformSourceDir, "components/$component")
             val terraformLog = File(logDir, "component-$action.log")
             result = runner.executeCommand(command, componentDir, terraformLog)
             if (result != 0) throw RuntimeException("Terraform failed with code $result")
+
+            //May throw on TF errors
             doLogFile(terraformLog, logger, logTerraformOutput, failOnTerraformErrors, action)
+
             result = this.executeHook("after")
             if (result != Integer.MAX_VALUE) log.write("Executed ${this.name}-after with return code $result\n")
-
+            result = this.executeGlobalHook("after")
+            if(result != Integer.MAX_VALUE) log.write("Executed global after with return code $result\n")
         }
     }
 
