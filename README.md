@@ -54,6 +54,7 @@ Configuration
   * version: The version to deploy.
     * Settable with property "we.version"
   * action: The terraform action to perform
+  * environmentVariables (Optional): A map of environment variables to pass to the hooks and Terraform executions
   * failOnTerraformErrors (Optional): Default true; Will fail the build if Terraform reports 
     an error during execution
   * logTerraformOutput (Optional): Default false; Will echo Terraform output to the 
@@ -150,4 +151,21 @@ You can create:
                         
 These can be used to establish a state file from environment, or clean up data after a destroy. They
 are executed as though they begin in the component root directory, and will share environment variables 
-exported from the before script.                           
+exported from the before script.       
+
+
+Development Builds
+------------------
+
+Add the bintray repository to your settings.gradle file:
+```groovy
+pluginManagement {
+    repositories {
+        maven {
+            url  "https://dl.bintray.com/kebernet/maven"
+        }
+        mavenCentral()
+    }
+}
+
+```                   

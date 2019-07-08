@@ -31,7 +31,7 @@ open class TerraformTask : DefaultTask() {
     companion object Constants {
         const val ENVIRONMENTS_DIR = "environments"
         const val DEFAULT_ENV = "dev"
-        val DEFAULT_TF_ARGS = listOf("-no-color", "-input=false", "-force-copy", "-backend=true", "-reconfigure", "-upgrade")
+        val DEFAULT_TF_ARGS = listOf("-no-color", "-input=false", "-backend=true", "-reconfigure", "-upgrade")
     }
 
     @InputFile
@@ -50,6 +50,10 @@ open class TerraformTask : DefaultTask() {
 
     @Input
     var version: String = project.findProperty("we.version") as String? ?: "undefined"
+
+    @Input
+    @Optional
+    var environmentVariables: Map<String, String>? = null
 
     @Input
     var action = "init"
@@ -94,6 +98,7 @@ open class TerraformTask : DefaultTask() {
         this.tfLog = File(this.logDir, "${this.name.toLowerCase(Locale.getDefault())}.log")
         this.workingDirectory = File(terraformSourceDir, "components/$component")
         this.runner = HookRunner()
+        this.runner.environmentState.putAll(this.environmentVariables ?: emptyMap())
         this.runner.environmentState["TFVAR_environment"] = this.environment
         this.runner.environmentState["TFVAR_version"] = this.version
         this.runner.environmentState["TFVAR_envversion"] = "${this.environment}-${this.version}"

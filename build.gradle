@@ -29,7 +29,7 @@ repositories {
 
 
 group 'net.kebernet'
-version '0.1.0'
+version '0.1.1'
 
 
 dependencies {
@@ -153,19 +153,24 @@ if(project.hasProperty("kebernet_bintray")) {
             name = 'net.kebernet.worldengine'
             publish = true
             licenses = ['Apache-2.0']
-            publications = ['plugin']
+            publications = ['worldEngine']
+            version {
+                attributes = [
+                        'gradle-plugin': "net.kebernet.world-engine:net.kebernet.world-engine.gradle.plugin:${project.version}"
+                ]
+            }
         }
     }
 }
 
 publishing {
     publications {
-        plugin(MavenPublication) {
-            artifact source: "${project.buildDir}/libs/${project.name}-${project.version}.jar", extension: 'jar'
+        worldEngine(MavenPublication) {
+            from components.java
             artifact source: "${project.buildDir}/libs/${project.name}-${project.version}-javadoc.jar", extension: 'jar', classifier: 'javadoc'
             artifact source: "${project.buildDir}/libs/${project.name}-${project.version}-sources.jar", extension: 'jar', classifier: 'sources'
-            groupId project.group
-            artifactId project.name
+            groupId "${project.group}.${project.name}"
+            artifactId "${project.group}.${project.name}.gradle.plugin"
             version project.version
         }
     }
