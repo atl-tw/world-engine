@@ -26,7 +26,7 @@ import java.io.FileOutputStream
 import java.net.URL
 import java.util.zip.ZipFile
 
-open class InstallTerraform: DefaultTask() {
+open class InstallTerraform : DefaultTask() {
 
     @Input
     var installTerraform = true
@@ -38,7 +38,6 @@ open class InstallTerraform: DefaultTask() {
     @Optional
     var terraformDownloadUrl: String? = null
 
-
     @Internal
     val urlTemplates = hashMapOf(
             Os.FAMILY_WINDOWS to "https://releases.hashicorp.com/terraform/{}/terraform_{}_windows_amd64.zip",
@@ -46,11 +45,10 @@ open class InstallTerraform: DefaultTask() {
             Os.FAMILY_UNIX to "https://releases.hashicorp.com/terraform/{}/terraform_{}_linux_amd64.zip"
     )
 
-
     @TaskAction
     fun apply() {
         val targetFolder = File(project.rootProject.rootDir, ".gradle/terraform")
-        if(!installTerraform || targetFolder.exists()) {
+        if (!installTerraform || targetFolder.exists()) {
             return
         }
         val url = terraformDownloadUrl
@@ -70,7 +68,7 @@ open class InstallTerraform: DefaultTask() {
             }
         }
         unzip(tmpFile, targetFolder)
-        if(Os.isFamily(Os.FAMILY_UNIX) || Os.isFamily(Os.FAMILY_MAC)){
+        if (Os.isFamily(Os.FAMILY_UNIX) || Os.isFamily(Os.FAMILY_MAC)) {
             File(targetFolder, "terraform").setExecutable(true)
         }
     }
@@ -89,6 +87,4 @@ open class InstallTerraform: DefaultTask() {
             }
         }
     }
-
-
 }

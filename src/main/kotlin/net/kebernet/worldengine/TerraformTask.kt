@@ -16,11 +16,14 @@
 package net.kebernet.worldengine
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.TaskAction
 import java.io.File
-import java.util.*
-
+import java.util.Locale
 
 @Suppress("MemberVisibilityCanBePrivate")
 open class TerraformTask : DefaultTask() {
@@ -31,9 +34,10 @@ open class TerraformTask : DefaultTask() {
         val DEFAULT_TF_ARGS = listOf("-no-color", "-input=false", "-force-copy", "-backend=true", "-reconfigure", "-upgrade")
     }
 
-    @InputFile @Optional
-    var terraformExecutable: String? = project.findProperty("we.terraformExecutable") as String? ?:
-            File(project.rootProject.projectDir, ".gradle/terraform/terraform").absolutePath
+    @InputFile
+    @Optional
+    var terraformExecutable: String? = project.findProperty("we.terraformExecutable") as String?
+            ?: File(project.rootProject.projectDir, ".gradle/terraform/terraform").absolutePath
 
     @InputDirectory
     var terraformSourceDir: File = File(project.projectDir, "src/deploy/terraform")
@@ -62,7 +66,7 @@ open class TerraformTask : DefaultTask() {
     var files: List<File>? = null
 
     @Internal
-    val logDir =  File(project.buildDir, "world-engine")
+    val logDir = File(project.buildDir, "world-engine")
 
     @Internal
     protected lateinit var logFile: File
@@ -76,7 +80,6 @@ open class TerraformTask : DefaultTask() {
     @Internal
     private lateinit var runner: HookRunner
 
-
     fun findConfigurations(): List<File> {
         val result: ArrayList<File> = ArrayList()
         val componentDir = File(terraformSourceDir, "components/$component")
@@ -85,7 +88,7 @@ open class TerraformTask : DefaultTask() {
         return result
     }
 
-    fun init(){
+    fun init() {
         this.files = findConfigurations()
         this.logFile = File(this.logDir, "${this.name.toLowerCase(Locale.getDefault())}.log")
         this.tfLog = File(this.logDir, "${this.name.toLowerCase(Locale.getDefault())}.log")
@@ -96,71 +99,68 @@ open class TerraformTask : DefaultTask() {
         this.runner.environmentState["TFVAR_envversion"] = "${this.environment}-${this.version}"
         logFile.mkdirs()
         logFile.delete()
-
     }
 
-    fun prepareCommand(action:String): List<String>{
+    fun prepareCommand(action: String): List<String> {
         val command = ArrayList<String>()
         val exec = File(this.terraformExecutable ?: "terraform")
         println("EXECUTABLE ${exec.absolutePath}")
-        command.add(if(exec.exists()) exec.absolutePath else  "terraform")
+        command.add(if (exec.exists()) exec.absolutePath else "terraform")
         command.add(action)
         command.addAll(DEFAULT_TF_ARGS)
-        command.addAll(this.files!!.map { f->  "-var-file=${f.absolutePath}" })
+        command.addAll(this.files!!.map { f -> "-var-file=${f.absolutePath}" })
         return command
     }
 
-    fun executeHook(suffix:String): Int {
+    fun executeHook(suffix: String): Int {
         val componentDir = File(terraformSourceDir, "components/$component")
         val hooksDirectory = File(componentDir, "hooks")
-        if(!hooksDirectory.exists() || !hooksDirectory.isDirectory){
+        if (!hooksDirectory.exists() || !hooksDirectory.isDirectory) {
             return Integer.MAX_VALUE
         }
         val scriptFile = hooksDirectory.listFiles { _, name ->
             name.startsWith("${this.name}-$suffix.")
         }?.firstOrNull()
-        if(scriptFile != null) {
+        if (scriptFile != null) {
             return this.runner.execute(scriptFile, workingDirectory, File(this.logDir, "$component-${scriptFile.name}.log"))
         }
         return Integer.MAX_VALUE
     }
 
-
     fun executeGlobalHook(hookName: String): Int {
         val hooksDirectory = File(terraformSourceDir, "hooks")
-        if(!hooksDirectory.exists() || !hooksDirectory.isDirectory){
+        if (!hooksDirectory.exists() || !hooksDirectory.isDirectory) {
             return Integer.MAX_VALUE
         }
         val scriptFile = hooksDirectory.listFiles { _, name ->
             name.startsWith(hookName)
         }?.firstOrNull()
-        if(scriptFile != null) {
+        if (scriptFile != null) {
             return this.runner.execute(scriptFile, workingDirectory, File(this.logDir, "$${scriptFile.name}.log"))
         }
         return Integer.MAX_VALUE
     }
 
-    private fun scanDirectory(componentDir: File) :List<File> {
+    private fun scanDirectory(componentDir: File): List<File> {
         return findConfiguration(componentDir, this.environment, version)
     }
 
-
     @Suppress("unused")
     @TaskAction
-    fun apply(){
+    fun apply() {
         init()
         val log = logFile.bufferedWriter(Charsets.UTF_8)
         log.use {
-            log.write("Using variable files:\n ${files?.joinToString("") { f-> "\t${f.absolutePath}\n" }}\n")
+            log.write("Using variable files:\n ${files?.joinToString("") { f -> "\t${f.absolutePath}\n" }}\n")
             val command = prepareCommand(action)
 
             log.write("Working Directory: ${workingDirectory.absolutePath}\n")
 
             var result = this.executeGlobalHook("before")
-            if(result != Integer.MAX_VALUE) log.write("Executed global before with return code $result\n")
+            if (result != Integer.MAX_VALUE) log.write("Executed global before with return code $result\n")
 
             result = this.executeHook("before")
-            if(result != Integer.MAX_VALUE) log.write("Executed ${this.name}-before with return code $result\n")
+            if (result != Integer.MAX_VALUE) log.write("Executed ${this.name}-before with return code $result\n")
             log.write("Command:\n\t${command.joinToString(" ")}\n")
 
             val componentDir = File(terraformSourceDir, "components/$component")
@@ -168,15 +168,13 @@ open class TerraformTask : DefaultTask() {
             result = runner.executeCommand(command, componentDir, terraformLog)
             if (result != 0) throw RuntimeException("Terraform failed with code $result")
 
-            //May throw on TF errors
+            // May throw on TF errors
             doLogFile(terraformLog, logger, logTerraformOutput, failOnTerraformErrors, action)
 
             result = this.executeHook("after")
             if (result != Integer.MAX_VALUE) log.write("Executed ${this.name}-after with return code $result\n")
             result = this.executeGlobalHook("after")
-            if(result != Integer.MAX_VALUE) log.write("Executed global after with return code $result\n")
+            if (result != Integer.MAX_VALUE) log.write("Executed global after with return code $result\n")
         }
     }
-
-
 }

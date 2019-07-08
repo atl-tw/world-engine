@@ -17,7 +17,7 @@ package net.kebernet.worldengine
 
 import java.io.File
 
-class HookRunner  {
+class HookRunner {
 
     val environmentState = HashMap<String, String>()
 
@@ -36,14 +36,12 @@ class HookRunner  {
                 .start()
                 .waitFor()
 
-        if(result != 0){
+        if (result != 0) {
             throw RuntimeException("Failed to execute ($result) ${command.joinToString(" ")}, see log at ${log.absolutePath}")
         }
 
-
         return result
     }
-
 
     fun execute(scriptFile: File, workingDirectory: File?, log: File): Int {
         val tempFile = File.createTempFile("env", "txt")
@@ -62,5 +60,4 @@ class HookRunner  {
 
         return result
     }
-
 }

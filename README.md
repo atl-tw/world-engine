@@ -145,8 +145,8 @@ task foo(type:WorldEngineTask){
 ```
 
 You can create:
-    * components/application1/hooks/foo-before.sh
-    * components/application1/hooks/foo-after.sh
+  * components/application1/hooks/foo-before.sh
+  * components/application1/hooks/foo-after.sh
                         
 These can be used to establish a state file from environment, or clean up data after a destroy. They
 are executed as though they begin in the component root directory, and will share environment variables 

@@ -17,8 +17,8 @@ package net.kebernet.worldengine
 
 import org.gradle.api.logging.Logger
 import java.io.File
-import java.util.*
-
+import java.util.Optional
+import kotlin.collections.ArrayList
 
 fun doLogFile(terraformLog: File, logger: Logger, logTerraformOutput: Boolean, failOnTerraformErrors: Boolean, action: String) {
     val sb = StringBuilder()
@@ -27,10 +27,10 @@ fun doLogFile(terraformLog: File, logger: Logger, logTerraformOutput: Boolean, f
         if (failOnTerraformErrors && line.contains("Error: ")) sb.append(line)
         if (sb.isNotEmpty()) sb.append(line)
     }
-    if(sb.isNotEmpty()) throw RuntimeException("Terraform failed with\n$sb")
+    if (sb.isNotEmpty()) throw RuntimeException("Terraform failed with\n$sb")
 }
 
-fun findConfiguration(sourceDir: File, environment:String, suffix: String): List<File> {
+fun findConfiguration(sourceDir: File, environment: String, suffix: String): List<File> {
     if (!sourceDir.exists() || !sourceDir.isDirectory) {
         throw RuntimeException("${sourceDir.absolutePath} isn't a directory")
     }

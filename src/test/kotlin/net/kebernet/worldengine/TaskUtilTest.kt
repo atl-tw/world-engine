@@ -48,7 +48,6 @@ internal class TaskUtilTest {
                 logger = logger, logTerraformOutput = true,
                 failOnTerraformErrors = true, action = "plan")
         verify(logger).lifecycle(eq("Terraform[plan]: Whatever"))
-
     }
 
     @Test
@@ -61,8 +60,5 @@ internal class TaskUtilTest {
         result = findConfiguration(File("./src/test/resources"), "foo", "baz")
         assertEquals(1, result.size)
         assert(result.contains(File("./src/test/resources/environments/foo.tfvars")))
-
     }
-
-
 }
