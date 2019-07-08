@@ -41,7 +41,7 @@ task foo(type: WorldEngineTask){
 Configuration
 -------------
 
-###WorldEngineTask
+### WorldEngineTask
 
   * terraformExecutable (Optional): Path to the Terraform executable. 
     * Will default to .grade/terraform/terraform or PATH execution
@@ -60,7 +60,7 @@ Configuration
     gradle lifecycle log.
   * logDir (Optional): Default build/world-engine; Directory where logs will be written
   
-###InstallTerraform
+### InstallTerraform
   * installTerraform: Default true; Allows you to prevent the task from executing
   * terraformVersion: Default "0.12.3"; The version of Terraform to download
   * terraformDownloadUrl (Optional): The full URL to the terraform download zip file.
