@@ -43,68 +43,70 @@ Configuration
 
 ### WorldEngineTask
 
-  * terraformExecutable (Optional): Path to the Terraform executable. 
-    * Will default to .grade/terraform/terraform or PATH execution
-    * Settable with property "we.terraformExecutable"
-  * terraformSourceDir (Optional): Default src/deploy/terraform
-  * component: The component to deploy.
-    * Settable with property "we.component"
-  * environment: The environment to deploy
-    * Settable with property "we.environment"
-  * version: The version to deploy.
-    * Settable with property "we.version"
-  * action: The terraform action to perform
-  * environmentVariables (Optional): A map of environment variables to pass to the hooks and Terraform executions
-  * failOnTerraformErrors (Optional): Default true; Will fail the build if Terraform reports 
+  * ``terraformExecutable`` (Optional): Path to the Terraform executable. 
+    * Will default to ``.grade/terraform/terraform`` or ``PATH`` execution
+    * Settable with property ``we.terraformExecutable``
+  * ``terraformSourceDir`` (Optional): Default ``src/deploy/terraform``
+  * ``component``: The component to deploy.
+    * Settable with property ``we.component``
+  * ``environment``: The environment to deploy
+    * Settable with property ``we.environment``
+  * ``version``: The version to deploy.
+    * Settable with property ``we.version``
+  * ``action``: The Terraform action to perform
+  * ``environmentVariables`` (Optional): A map of environment variables to pass to the hooks and Terraform executions.
+    * ``TFVAR_environment``, ``TFVAR_version``, and ``TFVAR_envversion`` ('[environment]-[version]') are going
+      to be applied automatically.
+  * ``failOnTerraformErrors`` (Optional): Default true; Will fail the build if Terraform reports 
     an error during execution
-  * logTerraformOutput (Optional): Default false; Will echo Terraform output to the 
-    gradle lifecycle log.
-  * logDir (Optional): Default build/world-engine; Directory where logs will be written
+  * ``logTerraformOutput`` (Optional): Default false; Will echo Terraform output to the 
+    Gradle lifecycle log.
+  * ``logDir`` (Optional): Default ``build/world-engine``; Directory where logs will be written
   
 ### InstallTerraform
-  * installTerraform: Default true; Allows you to prevent the task from executing
-  * terraformVersion: Default "0.12.3"; The version of Terraform to download
-  * terraformDownloadUrl (Optional): The full URL to the terraform download zip file.
+  * ``installTerraform``: Default true; Allows you to prevent the task from executing
+  * ``terraformVersion``: Default "0.12.3"; The version of Terraform to download
+  * ``terraformDownloadUrl`` (Optional): The full URL to the terraform download zip file.
     * You *NEED* to use this if you are not using x64 Window/Mac/Linux
   
 
 Project Structure
 -----------------
 
-  * src
-    * main
-        * deploy
-            * terraform <- root
-                * environments <- global environment variable files
-                    * dev.tfvars (example)
-                    * qa.tfvars (example)
-                    * prod.tfvars (example)
-                * hooks <- executable files that are run around the TF tasks
-                    * before.sh
-                    * after.sh
-                * components <- individual components
-                    * [my component]
-                        * main.tf
-                        * environments <- component specific variable files
-                            * dev.tfvars (example)
-                            * qa.tfvars (example)
-                            * prod-blue.tfvars (example)
-                            * prod-green.tfvars (example)
-                        * hooks <- executable files that are run around the TF tasks
-                            * [task name]-before.sh
-                            * [task name]-after.sh
+  * ``src``
+    * ``main``
+        * ``deploy``
+            * ``terraform`` ← root
+                * ``environments`` ← global environment variable files
+                    * ``dev.tfvars`` (example)
+                    * ``qa.tfvars`` (example)
+                    * ``prod.tfvars`` (example)
+                * ``hooks`` ← executable files that are run around the TF tasks
+                    * ``before.sh``
+                    * ``after.sh``
+                * ``components`` ← individual components
+                    * ``[my component]``
+                        * ``main.tf``
+                        * ``environments`` ← component specific variable files
+                            * ``dev.tfvars`` (example)
+                            * ``qa.tfvars`` (example)
+                            * ``prod-blue.tfvars`` (example)
+                            * ``prod-green.tfvars`` (example)
+                        * hooks ← executable files that are run around the TF tasks
+                            * ``[task name]-before.sh``
+                            * ```[task name]-after.sh```
                         
 Terraform Install
 -----------------
 
 You can use the plugin to install terraform into the ```.gradle/terraform``` directory
-using an "InstallTerraform" task
+using an ``InstallTerraform`` task
 
 ```groovy
 task download(type:InstallTerraform){
-    terraformVersion = "0.12.2" // <- optional, defaults to 0.12.3
+    terraformVersion = "0.12.2" // ← optional, defaults to 0.12.3
     terraformDownloadUrl = "https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.2_solaris_amd64.zip"  
-    // ^- this is important. It will only detect 64 bit versions for windows/mac/linux. If you are 
+    // ⬑ this is important. It will only detect 64 bit versions for windows/mac/linux. If you are 
     // not using one of these, you need to specify the full download URL zip path 
     // also clobbers the terraformVersion property
 }
@@ -113,14 +115,14 @@ task download(type:InstallTerraform){
 Environments
 ------------
 
-Environments are a two-part name separated by a "-" character. The first part is the environment name,
+Environments are a two-part name separated by a '-' character. The first part is the environment name,
 the second part is the environment version. 
 
 For example, you might have:
 
-  * terraform/environments/dev.tfvars
-  * terraform/environments/dev-blue.tfvars
-  * terraform/environments/dev-green.tfvars
+  * ``terraform/environments/dev.tfvars``
+  * ``terraform/environments/dev-blue.tfvars``
+  * ``terraform/environments/dev-green.tfvars``
   
 This would be common if you are doing blue-green deployments. You have common values in the dev file, 
 and values/overrides specific to each version in the blue/green files.
@@ -146,8 +148,8 @@ task foo(type:WorldEngineTask){
 ```
 
 You can create:
-  * components/application1/hooks/foo-before.sh
-  * components/application1/hooks/foo-after.sh
+  * ``components/application1/hooks/foo-before.sh``
+  * ``components/application1/hooks/foo-after.sh``
                         
 These can be used to establish a state file from environment, or clean up data after a destroy. They
 are executed as though they begin in the component root directory, and will share environment variables 
@@ -157,7 +159,7 @@ exported from the before script.
 Development Builds
 ------------------
 
-Add the bintray repository to your settings.gradle file:
+Add the bintray repository to your ``settings.gradle`` file:
 ```groovy
 pluginManagement {
     repositories {
