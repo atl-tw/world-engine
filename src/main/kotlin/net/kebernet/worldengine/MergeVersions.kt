@@ -15,16 +15,25 @@
  */
 package net.kebernet.worldengine
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.TaskAction
+import java.io.File
 
-open class WorldEngine : Plugin<Project> {
+open class MergeVersions : DefaultTask() {
 
-    override fun apply(project: Project) {
-        with(project) {
-            project.extensions.extraProperties.set("WorldEngineTask", TerraformTask::class.java)
-            project.extensions.extraProperties.set("InstallTerraform", InstallTerraform::class.java)
-            project.extensions.extraProperties.set("MergeVersions", MergeVersions::class.java)
-        }
+    @Input
+    var currentVersions: String = "{}"
+
+    @Input
+    var applyVersions: String = "{}"
+
+    @Input @Optional
+    var outputFile: File = File(project.buildDir, "world-engine/versions.json")
+
+    @TaskAction
+    fun apply() {
+        updateVersions(currentVersions, applyVersions, outputFile)
     }
 }

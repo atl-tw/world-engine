@@ -15,10 +15,13 @@
  */
 package net.kebernet.worldengine
 
+import com.grack.nanojson.JsonObject
+import com.grack.nanojson.JsonParser
+import com.grack.nanojson.JsonWriter
 import org.gradle.api.logging.Logger
 import java.io.File
+import java.io.FileOutputStream
 import java.util.Optional
-import kotlin.collections.ArrayList
 
 fun doLogFile(terraformLog: File, logger: Logger, logTerraformOutput: Boolean, failOnTerraformErrors: Boolean, action: String) {
     val sb = StringBuilder()
@@ -43,4 +46,16 @@ fun findConfiguration(sourceDir: File, environment: String, suffix: String): Lis
             .listFiles { _, name -> name == "$environment-$suffix.tfvars" }
     Optional.ofNullable(files).ifPresent { f -> result.addAll(f) }
     return result
+}
+
+fun updateVersions(currentVersions: String, applyVersions: String, outputFile: File) {
+    val current: JsonObject = JsonParser.`object`().from(currentVersions)
+    val apply: JsonObject = JsonParser.`object`().from(applyVersions)
+    outputFile.parentFile.mkdirs()
+    apply.keys.forEach { key ->
+        current[key] = apply[key]
+    }
+    FileOutputStream(outputFile, false).use { fos ->
+        JsonWriter.indent("    ").on(fos).`object`(current).done()
+    }
 }

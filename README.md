@@ -31,6 +31,8 @@ plugins {
 }
 
 
+
+
 task foo(type: WorldEngineTask){
     component = "application1"
     version = "blue"
@@ -68,7 +70,13 @@ Configuration
   * ``terraformVersion``: Default "0.12.3"; The version of Terraform to download
   * ``terraformDownloadUrl`` (Optional): The full URL to the terraform download zip file.
     * You *NEED* to use this if you are not using x64 Window/Mac/Linux
-  
+    
+### MergeVersions
+  * ``currentVersions`` : Default ``{}`` A JSON String of the existing component versions
+  * ``applyVersions`` : Default ``{}`` A JSON String of the new component versions
+  * ``outputFile``: Default ``./build/world-engine/versions.json`` A JSON file containing the merged JSON objects
+    where ``[key]`` in the current version is replaced with the apply version. Order is preserved from the current
+    versions and appended where new.
 
 Project Structure
 -----------------
@@ -106,7 +114,7 @@ using an ``InstallTerraform`` task
 task download(type:InstallTerraform){
     terraformVersion = "0.12.2" // ← optional, defaults to 0.12.3
     terraformDownloadUrl = "https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.2_solaris_amd64.zip"  
-    // ⬑ this is important. It will only detect 64 bit versions for windows/mac/linux. If you are 
+    // ⬑ this is important. It will only detect x64 versions for windows/mac/linux. If you are 
     // not using one of these, you need to specify the full download URL zip path 
     // also clobbers the terraformVersion property
 }

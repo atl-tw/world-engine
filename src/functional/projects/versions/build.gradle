@@ -1,0 +1,9 @@
+plugins {
+    id 'net.kebernet.world-engine'
+}
+
+
+task version(type:MergeVersions){
+    currentVersions = file("current.json").text
+    applyVersions = file("next.json").text
+}

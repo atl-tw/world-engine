@@ -15,6 +15,8 @@
  */
 package net.kebernet.worldengine
 
+import com.grack.nanojson.JsonObject
+import com.grack.nanojson.JsonParser
 import org.gradle.api.logging.Logger
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -23,6 +25,7 @@ import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import java.io.File
+import java.io.FileInputStream
 
 internal class TaskUtilTest {
 
@@ -60,5 +63,56 @@ internal class TaskUtilTest {
         result = findConfiguration(File("./src/test/resources"), "foo", "baz")
         assertEquals(1, result.size)
         assert(result.contains(File("./src/test/resources/environments/foo.tfvars")))
+    }
+
+    @Test
+    fun updateVersionsNewTest() {
+        val apply = """
+            {
+                "foo": "123"
+            }
+        """.trimIndent()
+        val current = """
+            {
+                "bar": "456",
+                "baz": "789"
+            }
+        """.trimIndent()
+        val output = File("./build/test-data/newversion.json")
+        updateVersions(current, apply, output)
+        FileInputStream(output).use {
+            fis ->
+            val result: JsonObject = JsonParser.`object`().from(fis)
+            assertEquals("456", result["bar"])
+            assertEquals("789", result["baz"])
+            assertEquals("123", result["foo"])
+        }
+    }
+
+    @Test
+    fun updateVersionsUpdateTest() {
+        val apply = """
+            {
+                "baz": "790",
+                "bar": "123"
+                
+            }
+        """.trimIndent()
+        val current = """
+            {
+                "bar": "456",
+                "foo": "456",
+                "baz": "790"
+            }
+        """.trimIndent()
+        val output = File("./build/test-data/updateverrsion.json")
+        updateVersions(current, apply, output)
+        FileInputStream(output).use {
+            fis ->
+            val result: JsonObject = JsonParser.`object`().from(fis)
+            assertEquals("123", result["bar"])
+            assertEquals("790", result["baz"])
+            assertEquals("456", result["foo"])
+        }
     }
 }
