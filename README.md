@@ -151,7 +151,7 @@ task download(type:InstallTerraform){
 task foo(type:WorldEngineTask){
     component = "application1"
     action = "plan"
-    dependsOn download // <-- if you have a terraform install task
+    dependsOn download // ← if you have a terraform install task
 }
 ```
 
@@ -161,8 +161,40 @@ You can create:
                         
 These can be used to establish a state file from environment, or clean up data after a destroy. They
 are executed as though they begin in the component root directory, and will share environment variables 
-exported from the before script.       
+exported from the before script.     
 
+Version Files
+-------------
+
+Because you have a number of components that might make up your cloud app deployment, it is likely
+they are versioned independently. The MergeVersion task will take two JSON files and apply the 
+elements from one to another. This means you can submit a CI job with a parameter containing the 
+new versions, then apply the versions you want to update, and you are left with a result containing
+the result of this execution.  
+
+For example:
+```groovy
+
+task version(type:MergeVersions){
+    currentVersions = file("current.json").text // ← The versions from your previous build, perhaps
+                                                // downloaded from S3 or your CI server
+    applyVersions = System.getenv().containsKey("NEW_VERSIONS") ? System.getenv("NEW_VERSIONS") : "{}"
+}
+
+
+task plan(type: WorldEngineTask){
+    component = "application1"
+    version = "${BUILD_NUMBER}"
+    action = "plan"
+    environmentVariables = 
+    new JsonSlurper().parseFile(file("build/world-engine/versions.json")) // ← The default output
+    dependsOn version
+}
+
+```
+
+Now you have your merged versions as TFVAR_* environment variables for execution of your Terraform 
+Scripts.
 
 Development Builds
 ------------------
