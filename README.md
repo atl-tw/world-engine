@@ -178,7 +178,8 @@ For example:
 task version(type:MergeVersions){
     currentVersions = file("current.json").text // ← The versions from your previous build, perhaps
                                                 // downloaded from S3 or your CI server
-    applyVersions = System.getenv().containsKey("NEW_VERSIONS") ? System.getenv("NEW_VERSIONS") : "{}"
+    applyVersions = System.getenv().containsKey("NEW_VERSIONS") ? 
+    System.getenv("NEW_VERSIONS") : "{}" // ← read the "NEW_VERSIONS" Jenkins Parameter
 }
 
 
