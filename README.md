@@ -187,8 +187,8 @@ task plan(type: WorldEngineTask){
     component = "application1"
     version = "${BUILD_NUMBER}"
     action = "plan"
-    environmentVariables = 
-    new JsonSlurper().parseFile(file("build/world-engine/versions.json")) // ← The default output
+    environmentVariables = new JsonSlurper()
+        .parseFile(file("build/world-engine/versions.json")) // ← The default output
     dependsOn version
 }
 
